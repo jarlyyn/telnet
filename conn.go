@@ -144,6 +144,7 @@ func (c *Conn) skipSubneg() error {
 				}
 				return nil
 			}
+		} else {
 			data = append(data, b)
 		}
 	}
