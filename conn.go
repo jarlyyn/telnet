@@ -45,10 +45,10 @@ const (
 // Telnet specific methods.
 type Conn struct {
 	net.Conn
-	r             *bufio.Reader
-	OnSubneg      func([]byte)
-	unixWriteMode bool
-	GMCP bool
+	r                  *bufio.Reader
+	OnSubneg           func([]byte)
+	unixWriteMode      bool
+	GMCP               bool
 	cliSuppressGoAhead bool
 	cliEcho            bool
 }
@@ -131,7 +131,7 @@ func (c *Conn) deny(cmd, opt byte) (err error) {
 }
 
 func (c *Conn) skipSubneg() error {
-	data=[]byte
+	data := []byte{}
 	for {
 		if b, err := c.r.ReadByte(); err != nil {
 			return err
@@ -139,12 +139,12 @@ func (c *Conn) skipSubneg() error {
 			if b, err = c.r.ReadByte(); err != nil {
 				return err
 			} else if b == cmdSE {
-				if c.OnSubneg!=nil{
+				if c.OnSubneg != nil {
 					c.OnSubneg(data)
 				}
 				return nil
 			}
-			data=append(data,b)
+			data = append(data, b)
 		}
 	}
 }
@@ -170,11 +170,11 @@ func (c *Conn) cmd(cmd byte) error {
 	case optGMCP:
 		switch cmd {
 		case cmdWill:
-			if c.GMCP{
-				err=e.do(optGMCP)
+			if c.GMCP {
+				err = c.do(optGMCP)
 			}
-		break
-	}
+			break
+		}
 	case optEcho:
 		// Accept any echo configuration.
 		switch cmd {
