@@ -38,16 +38,17 @@ const (
 	optSuppressGoAhead = 3
 	//	optTerminalType    = 24
 	optNAWS = 31
+	optGMCP = 201
 )
 
 // Conn implements net.Conn interface for Telnet protocol plus some set of
 // Telnet specific methods.
 type Conn struct {
 	net.Conn
-	r *bufio.Reader
-
+	r             *bufio.Reader
+	OnSubneg      func([]byte)
 	unixWriteMode bool
-
+	GMCP bool
 	cliSuppressGoAhead bool
 	cliEcho            bool
 }
@@ -130,6 +131,7 @@ func (c *Conn) deny(cmd, opt byte) (err error) {
 }
 
 func (c *Conn) skipSubneg() error {
+	data=[]byte
 	for {
 		if b, err := c.r.ReadByte(); err != nil {
 			return err
@@ -137,8 +139,12 @@ func (c *Conn) skipSubneg() error {
 			if b, err = c.r.ReadByte(); err != nil {
 				return err
 			} else if b == cmdSE {
+				if c.OnSubneg!=nil{
+					c.OnSubneg(data)
+				}
 				return nil
 			}
+			data=append(data,b)
 		}
 	}
 }
@@ -161,6 +167,14 @@ func (c *Conn) cmd(cmd byte) error {
 	}
 	//log.Println("received cmd:", cmd, o)
 	switch o {
+	case optGMCP:
+		switch cmd {
+		case cmdWill:
+			if c.GMCP{
+				err=e.do(optGMCP)
+			}
+		break
+	}
 	case optEcho:
 		// Accept any echo configuration.
 		switch cmd {
