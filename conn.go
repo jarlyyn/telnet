@@ -36,9 +36,9 @@ const (
 const (
 	optEcho            = 1
 	optSuppressGoAhead = 3
-	//	optTerminalType    = 24
-	optNAWS = 31
-	optGMCP = 201
+	optTerminalType    = 24
+	optNAWS            = 31
+	optGMCP            = 201
 )
 
 // Conn implements net.Conn interface for Telnet protocol plus some set of
@@ -49,6 +49,7 @@ type Conn struct {
 	OnSubneg           func([]byte)
 	unixWriteMode      bool
 	GMCP               bool
+	TerminalType       bool
 	cliSuppressGoAhead bool
 	cliEcho            bool
 }
@@ -106,7 +107,9 @@ func (c *Conn) wont(option byte) error {
 	_, err := c.Conn.Write([]byte{cmdIAC, cmdWont, option})
 	return err
 }
-
+func (c *Conn) Sub(opt byte, data ...byte) error {
+	return c.sub(opt, data...)
+}
 func (c *Conn) sub(opt byte, data ...byte) error {
 	if _, err := c.Conn.Write([]byte{cmdIAC, cmdSB, opt}); err != nil {
 		return err
@@ -168,6 +171,14 @@ func (c *Conn) cmd(cmd byte) error {
 	}
 	//log.Println("received cmd:", cmd, o)
 	switch o {
+	case optTerminalType:
+		switch cmd {
+		case cmdWill:
+			if c.TerminalType {
+				err = c.do(optTerminalType)
+			}
+			break
+		}
 	case optGMCP:
 		switch cmd {
 		case cmdWill:
