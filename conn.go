@@ -49,6 +49,7 @@ type Conn struct {
 	OnSubneg           func([]byte)
 	unixWriteMode      bool
 	GMCP               bool
+	OnGA               func()
 	TerminalType       bool
 	cliSuppressGoAhead bool
 	cliEcho            bool
@@ -156,6 +157,9 @@ func (c *Conn) skipSubneg() error {
 func (c *Conn) cmd(cmd byte) error {
 	switch cmd {
 	case cmdGA:
+		if c.OnGA != nil {
+			c.OnGA()
+		}
 		return nil
 	case cmdDo, cmdDont, cmdWill, cmdWont:
 		// Process cmd after this switch.
