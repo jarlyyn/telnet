@@ -173,9 +173,9 @@ func (c *Conn) cmd(cmd byte) error {
 	switch o {
 	case optTerminalType:
 		switch cmd {
-		case cmdWill:
+		case cmdDo:
 			if c.TerminalType {
-				err = c.do(optTerminalType)
+				err = c.will(optTerminalType)
 			}
 			break
 		}
